@@ -1,0 +1,1 @@
+"""Cool Data Sim application."""

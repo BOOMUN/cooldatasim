@@ -1,0 +1,38 @@
+# 本机参考资料，不作为本项目源码提交
+/.inspect-relaydesk/
+/cooldatasim-logo-reference.png
+/outputs/
+/tmp/
+
+# 环境、凭证、私钥
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+*.jks
+id_rsa*
+id_ed25519*
+remote_access_ed25519*
+.ssh/
+secrets/
+
+# 本地状态与构建产物
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.coverage
+htmlcov/
+node_modules/
+dist/
+coverage/
+*.log
+*.sqlite
+*.sqlite3
+*.db
+.DS_Store
+Thumbs.db
