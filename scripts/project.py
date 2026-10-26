@@ -289,13 +289,23 @@ def install() -> int:
     result = subprocess.run([str(python), "-m", "pip", "install", "-r", "backend/requirements.lock"], cwd=ROOT)
     if result.returncode:
         return result.returncode
-    hooks = subprocess.run(["git", "config", "--local", "--get", "core.hooksPath"], cwd=ROOT, capture_output=True, text=True)
+    install_git_hooks(ROOT)
+    return npm(ROOT, "ci")
+
+
+def install_git_hooks(root: Path) -> bool:
+    location = subprocess.run(["git", "rev-parse", "--show-toplevel"], cwd=root, capture_output=True, text=True)
+    if location.returncode or Path(location.stdout.strip()).resolve() != root.resolve():
+        print("NOTICE: source archive has no own Git metadata; local hook setup skipped")
+        return False
+    hooks = subprocess.run(["git", "config", "--get", "core.hooksPath"], cwd=root, capture_output=True, text=True)
     if hooks.returncode or hooks.stdout.strip() == ".githooks":
-        subprocess.run(["git", "config", "--local", "core.hooksPath", ".githooks"], cwd=ROOT, check=True)
+        subprocess.run(["git", "config", "--local", "core.hooksPath", ".githooks"], cwd=root, check=True)
         print("OK: local protected-branch and force-push guard enabled")
+        return True
     else:
         print("NOTICE: existing custom Git hooks preserved; integrate .githooks/pre-push manually")
-    return npm(ROOT, "ci")
+        return False
 
 
 def lint(root: Path) -> int:

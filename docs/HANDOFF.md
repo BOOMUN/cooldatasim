@@ -55,5 +55,6 @@ python scripts/app.py verify
 - 主分支保护是否实际启用，以GitHub仓库设置和TASK-005记录为准；不能只靠文档声称已保护。
 - 当前GitHub API要求账号升级Pro或改为公开仓库才能启用私有仓库分支保护，故远端保护尚未启用。install会在未自定义hooks的仓库启用本地pre-push保护，拒绝直推main/master和非快进改写；它可以被用户绕过，不能作为远端强制保护的替代证明。
 - 离线bundle可用 `git clone -b ai/TASK-005 cooldatasim.bundle cooldatasim` 恢复。ZIP是纯源代码，不含.git历史。
+- ZIP解压后可安装和验证；没有自身.git时会跳过本地hook设置，不修改父目录的Git配置。要继续版本控制，可先git init到任务分支，再安装hook。
 - bundle、ZIP、校验清单由 `python scripts/package_git.py export` 产生，位于被忽略的outputs/git-handoff。导出会审计当前文件、暂存区和全部Git历史；不要手工把工作目录整包压缩。
 - Git文件、Docker镜像、数据库备份和环境密钥是不同交付物，不能互相替代。

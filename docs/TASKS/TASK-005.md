@@ -2,7 +2,7 @@
 
 ## 状态
 
-进行中。用户明确要求创建名为cooldatasim的新GitHub仓库，并按AI入口、任务边界、验证命令、决策、PR/CI规范交付。
+源代码已提交任务分支并创建PR，Git交接工具已验证；等待人工Review/合并，GitHub远端强制保护受账号方案限制而未启用。该未完成项明确保留，整体业务项目也未标记完成。
 
 ## 背景
 
@@ -63,10 +63,16 @@ python scripts/package_git.py export
 - 已创建私有仓库 https://github.com/BOOMUN/cooldatasim ，main由GitHub初始化README。
 - 已设置本仓库专用GitHub noreply提交身份，保留既有工作文件。
 - 交接脚本6项测试通过，覆盖离线恢复、脏工作区拒绝、已知凭证、不回显密钥、暂存密钥及历史已删除密钥检查。
-- 本地pre-push保护6项测试通过；拒绝main/master直推/删除、非快进改写和已有标签改写。
+- 本地pre-push保护及安装上下文8项测试通过；拒绝main/master直推/删除、非快进改写和已有标签改写，保留用户自定义hook；ZIP安装不修改父仓库配置。
 - GitHub分支保护API拒绝私有仓库启用，返回“Upgrade to GitHub Pro or make this repository public to enable this feature.”。仓库保持私有，远端强制保护未启用；本地hook不能代替它。
-- 完整`python scripts/project.py check`通过：55项治理/部署/Git交接测试、122项后端及独立模型接口测试、17项前端测试，类型检查和正式构建通过。GitHub官方Actions引用固定到已查询的完整提交SHA，应用依赖没有升级。
-- 远端CI、PR和离线文件当前尚待执行，后续结果另行记录。
+- 初始提交前完整`python scripts/project.py check`通过：55项治理/部署/Git交接测试、122项后端及独立模型接口测试、17项前端测试，类型检查和正式构建通过。随后补充2项ZIP/自定义hook上下文回归，当前治理测试为57项；GitHub官方Actions固定完整提交SHA，应用依赖没有升级。
+- 已提交并推送ai/TASK-005，初始源代码提交4f9a44c33da3fa0e8c3f9bf6da85325c5bf39b13；main只保留GitHub初始化内容，未直接推送应用代码。
+- 已创建PR https://github.com/BOOMUN/cooldatasim/pull/1 ，保持OPEN供人工Review，未自动合并。
+- 初始PR远端CI在Ubuntu及Windows均成功： https://github.com/BOOMUN/cooldatasim/actions/runs/40260156129 。首次push触发的重复运行被PR并发规则取消，不计为验证通过。工作流随后调整为PR、main合并后push及手动触发；最终提交结果以PR当前检查为准。
+- 已生成并验证完整Git bundle及源代码ZIP；离线克隆提交一致，入口文件齐全，无真实.env。最终包与提交、SHA-256绑定，位置见交付消息和包内MANIFEST.json。
+- 所有代码/暂存/历史文件通过凭证审计。修正frontend/src/api.ts末尾多余空行，未改业务逻辑。
+
+此次没有重新操作数据库、模型电脑、AWS或WhatsApp；历史业务验收日期保持原样。尚未完成的是远端强制保护和PR人工Review/合并，未把这些项目标为完成。
 
 ## 人工验收与风险
 

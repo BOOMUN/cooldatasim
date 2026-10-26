@@ -1,6 +1,7 @@
 import importlib.util
 from pathlib import Path
 import subprocess
+import tempfile
 import unittest
 from unittest.mock import Mock
 
@@ -8,6 +9,9 @@ ROOT = Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location("pre_push", ROOT / "scripts/pre_push.py")
 guard = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(guard)
+PROJECT_SPEC = importlib.util.spec_from_file_location("handoff_project", ROOT / "scripts/project.py")
+project = importlib.util.module_from_spec(PROJECT_SPEC)
+PROJECT_SPEC.loader.exec_module(project)
 
 
 class PushGuard(unittest.TestCase):
@@ -39,3 +43,22 @@ class PushGuard(unittest.TestCase):
     def test_tag_rewrite_rejected(self):
         line = f"refs/tags/v0.1.0 {'a'*40} refs/tags/v0.1.0 {'b'*40}"
         self.assertIsNotNone(guard.check_updates([line]))
+
+    def test_zip_inside_another_repository_does_not_change_parent_hooks(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            parent = Path(temporary)
+            subprocess.run(["git", "init", "-q", str(parent)], check=True)
+            child = parent / "unzipped-source"
+            child.mkdir()
+            self.assertFalse(project.install_git_hooks(child))
+            result = subprocess.run(["git", "config", "--local", "--get", "core.hooksPath"], cwd=parent, capture_output=True)
+            self.assertNotEqual(result.returncode, 0)
+
+    def test_custom_hook_configuration_is_preserved(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            subprocess.run(["git", "init", "-q", str(root)], check=True)
+            subprocess.run(["git", "config", "--local", "core.hooksPath", "custom-hooks"], cwd=root, check=True)
+            self.assertFalse(project.install_git_hooks(root))
+            result = subprocess.run(["git", "config", "--get", "core.hooksPath"], cwd=root, capture_output=True, text=True, check=True)
+            self.assertEqual(result.stdout.strip(), "custom-hooks")

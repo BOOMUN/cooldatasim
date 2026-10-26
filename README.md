@@ -2,6 +2,8 @@
 
 GitHub目标仓库：`BOOMUN/cooldatasim`（私有开发仓库）。新接手先读 [项目交接入口](docs/HANDOFF.md)。
 
+完整代码当前在[ai/TASK-005分支](https://github.com/BOOMUN/cooldatasim/tree/ai/TASK-005)，[PR #1](https://github.com/BOOMUN/cooldatasim/pull/1)等待人工Review，尚未合并main。GitHub账号方案暂不支持私有仓库强制分支保护；本地推送钩子已提供，具体限制见TASK-005。
+
 面向 Cool Data Sim 客服人員的專用後台，透過 WhatsApp Business 接待客戶，利用網站知識和可切換的對話模型提供回覆。使用者目前指定暫用 DeepSeek V4.1 Flash high，Qwen 對話設定保留。
 
 **目前階段：本機首版已運行，專案整體仍在開發和聯調中。** 登入、客戶/會話、網站草稿採集、知識審核、商品資料及獨立向量/重排已接入；WhatsApp真機同步等項目仍未完成。應用狀態見TASK-003，向量接入證據見[TASK-004](docs/TASKS/TASK-004.md)，不把有限驗證當成整體驗收。

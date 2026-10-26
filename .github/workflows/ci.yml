@@ -4,7 +4,7 @@ on:
   pull_request:
   push:
     branches:
-      - 'ai/**'
+      - main
   workflow_dispatch:
 
 permissions:
