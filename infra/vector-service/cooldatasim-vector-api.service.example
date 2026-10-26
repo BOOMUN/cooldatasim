@@ -1,0 +1,25 @@
+[Unit]
+Description=Cool Data Sim isolated CPU Embedding and Reranker API
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/ubuntu/ai/workspace/cooldatasim-vector-api
+EnvironmentFile=/home/ubuntu/ai/workspace/cooldatasim-vector-api/.env
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=CUDA_VISIBLE_DEVICES=
+Environment=HF_HUB_OFFLINE=1
+Environment=TRANSFORMERS_OFFLINE=1
+Environment=TOKENIZERS_PARALLELISM=false
+ExecStart=/home/ubuntu/ai/workspace/employee-rag/.venv/bin/python -m uvicorn vector_api:app --host 127.0.0.1 --port 8195 --workers 1 --no-access-log
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+TimeoutStartSec=600
+TimeoutStopSec=30
+MemoryMax=8G
+
+[Install]
+WantedBy=default.target

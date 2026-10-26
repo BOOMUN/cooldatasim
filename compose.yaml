@@ -1,0 +1,108 @@
+name: cooldatasim
+
+x-model-environment: &model-environment
+  COOLDATASIM_DATABASE_URL: postgresql+psycopg://cooldatasim_app:${COOLDATASIM_DB_APP_PASSWORD}@postgres:5432/cooldatasim
+  COOLDATASIM_QWEN_BASE_URL: ${COOLDATASIM_QWEN_BASE_URL:-}
+  COOLDATASIM_QWEN_MODEL: ${COOLDATASIM_QWEN_MODEL:-qwen3.8-27b}
+  COOLDATASIM_QWEN_API_KEY: ${COOLDATASIM_QWEN_API_KEY:-}
+  COOLDATASIM_CHAT_PROVIDER: ${COOLDATASIM_CHAT_PROVIDER:-}
+  COOLDATASIM_CHAT_BASE_URL: ${COOLDATASIM_CHAT_BASE_URL:-}
+  COOLDATASIM_CHAT_MODEL: ${COOLDATASIM_CHAT_MODEL:-}
+  COOLDATASIM_CHAT_API_KEY: ${COOLDATASIM_CHAT_API_KEY:-}
+  COOLDATASIM_CHAT_REASONING_EFFORT: ${COOLDATASIM_CHAT_REASONING_EFFORT:-}
+  COOLDATASIM_CHAT_SESSION_NAMESPACE: ${COOLDATASIM_CHAT_SESSION_NAMESPACE:-cooldatasim}
+  COOLDATASIM_EMBEDDING_BASE_URL: ${COOLDATASIM_EMBEDDING_BASE_URL:-}
+  COOLDATASIM_EMBEDDING_MODEL: ${COOLDATASIM_EMBEDDING_MODEL:-Qwen3-Embedding-0.6B}
+  COOLDATASIM_EMBEDDING_API_KEY: ${COOLDATASIM_EMBEDDING_API_KEY:-}
+  COOLDATASIM_RERANKER_BASE_URL: ${COOLDATASIM_RERANKER_BASE_URL:-}
+  COOLDATASIM_RERANKER_MODEL: ${COOLDATASIM_RERANKER_MODEL:-Qwen3-Reranker-0.6B}
+  COOLDATASIM_RERANKER_API_KEY: ${COOLDATASIM_RERANKER_API_KEY:-}
+  COOLDATASIM_CRAWL_ALLOWED_HOSTS: www.cooldatasim.com,cooldatasim.com
+  LANGSMITH_TRACING: "false"
+  LANGCHAIN_TRACING_V2: "false"
+
+services:
+  api:
+    image: cooldatasim-app:0.1.0
+    platform: linux/amd64
+    pull_policy: never
+    profiles: [app]
+    restart: unless-stopped
+    environment:
+      <<: *model-environment
+      COOLDATASIM_ADMIN_USERNAME: ${COOLDATASIM_ADMIN_USERNAME:-admin}
+      COOLDATASIM_ADMIN_PASSWORD: ${COOLDATASIM_ADMIN_PASSWORD:-}
+      COOLDATASIM_EVOLUTION_BASE_URL: ${COOLDATASIM_EVOLUTION_BASE_URL:-}
+      COOLDATASIM_EVOLUTION_API_KEY: ${COOLDATASIM_EVOLUTION_API_KEY:-}
+      COOLDATASIM_EVOLUTION_INSTANCE: ${COOLDATASIM_EVOLUTION_INSTANCE:-}
+      COOLDATASIM_WEBHOOK_SECRET: ${COOLDATASIM_WEBHOOK_SECRET:-}
+      COOLDATASIM_ALLOW_EXTERNAL_SEND: "false"
+    ports:
+      - "127.0.0.1:${COOLDATASIM_APP_PORT:-8787}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=3)"]
+      interval: 5s
+      timeout: 4s
+      retries: 20
+      start_period: 10s
+    labels:
+      com.cooldatasim.owner: cooldatasim
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+  worker:
+    image: cooldatasim-app:0.1.0
+    platform: linux/amd64
+    pull_policy: never
+    profiles: [app]
+    restart: unless-stopped
+    command: [python, -m, app.worker]
+    environment: *model-environment
+    depends_on:
+      api:
+        condition: service_healthy
+    labels:
+      com.cooldatasim.owner: cooldatasim
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+  postgres:
+    image: cooldatasim-postgres:17-pgvector-v1
+    platform: linux/amd64
+    pull_policy: never
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: cooldatasim_admin
+      POSTGRES_DB: cooldatasim
+      POSTGRES_PASSWORD: ${COOLDATASIM_DB_ADMIN_PASSWORD:?Run init-env first}
+      COOLDATASIM_DB_APP_PASSWORD: ${COOLDATASIM_DB_APP_PASSWORD:?Run init-env first}
+      POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
+    ports:
+      - "127.0.0.1:${COOLDATASIM_DB_PORT:-5433}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cooldatasim_admin -d cooldatasim"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+    labels:
+      com.cooldatasim.owner: cooldatasim
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+volumes:
+  postgres-data:
+    labels:
+      com.cooldatasim.owner: cooldatasim

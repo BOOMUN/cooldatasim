@@ -1,0 +1,10 @@
+\set ON_ERROR_STOP on
+\getenv app_password COOLDATASIM_DB_APP_PASSWORD
+
+CREATE EXTENSION IF NOT EXISTS vector;
+CREATE ROLE cooldatasim_app LOGIN PASSWORD :'app_password'
+  NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION;
+GRANT CONNECT, TEMPORARY ON DATABASE cooldatasim TO cooldatasim_app;
+CREATE SCHEMA app AUTHORIZATION cooldatasim_app;
+ALTER ROLE cooldatasim_app IN DATABASE cooldatasim SET search_path = app, public;
+REVOKE CREATE ON SCHEMA public FROM PUBLIC;
